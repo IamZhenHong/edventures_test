@@ -21,12 +21,12 @@ To get this project up and running you should start by having Python installed o
 
 Clone or download this repository and open it in your editor of choice. In a terminal (mac/linux) terminal, run the following command in the base directory of this project
 ```
-cd edventures_test
+cd edventures_test-codebase
 ```
 
 That will create a new folder `myenv` in your project directory
 ```
-python -m venv myenv
+python -m venv env
 ```
 
 Next activate it with this command on mac/linux
@@ -79,6 +79,8 @@ Add a new document object
 - Key in corresponding file type (csv or pdf)
 - Upload file in file field
 - Provide a descriptive title for the document for title.
+
+**Note** Currently only support multiple csv documents and one pdf document
 
 
 ### Using the RAG
