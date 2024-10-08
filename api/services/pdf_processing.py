@@ -40,35 +40,37 @@ def pdf_processing(document, query):
         print(f"Failed to register Chroma vectorstore: {str(e)}")
         return None  
     
-    # Retrieve all chunks stored in the Chroma vector store
-    print("All chunks and their lengths in the database:")
-    all_chunks = semantic_chunk_vectorstore._collection.get(include=['documents'])  # Access the internal collection
+    # Uncomment this block of code to see the chunk lengths for the document
+    # # Retrieve all chunks stored in the Chroma vector store
+    # print("All chunks and their lengths in the database:")
+    # all_chunks = semantic_chunk_vectorstore._collection.get(include=['documents'])  # Access the internal collection
 
-    if 'documents' in all_chunks:
-        for idx, chunk in enumerate(all_chunks['documents']):
-            chunk_length = len(chunk)  # Assuming each document is a string
-            print(f"Chunk {idx+1}: Length = {chunk_length}")
-    else:
-        print("No chunks found in the database.")
+    # # if 'documents' in all_chunks:
+    # #     for idx, chunk in enumerate(all_chunks['documents']):
+    # #         chunk_length = len(chunk)  # Assuming each document is a string
+    # #         print(f"Chunk {idx+1}: Length = {chunk_length}")
+    # # else:
+    # #     print("No chunks found in the database.")
 
 
     # Create a retriever for semantic chunks from the vector store, configured to return the top 1 result based on the search query.
     semantic_chunk_retriever = semantic_chunk_vectorstore.as_retriever(search_kwargs={"k":3})
 
-    # Execute the query
+    # Execute the query to retrieve most relevant chunks
     result = semantic_chunk_retriever.invoke(query)
-
 
     if not result:
         print("No results found for the query.")
         return None  # Handle the error appropriately
     
-    # The augment_chunk function is commented out because it takes too long to process using the Hugging Face model API
+    # Augment the retrieved chunks with the query
     augmented_result = augment_chunk(result, query, document.title)
-    for idx, chunk in enumerate(result):
-        print(f"Chunk {idx+1}: {chunk}")
-    print("Augmented result:")
-    print(augmented_result)
+    
+
+    # for idx, chunk in enumerate(result):
+    #     print(f"Chunk {idx+1}: {chunk}")
+    # print("Augmented result:")
+    # print(augmented_result)
 
     # Return the retrieved chunks
     return augmented_result
