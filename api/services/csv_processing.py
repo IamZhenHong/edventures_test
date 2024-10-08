@@ -13,6 +13,9 @@ from langchain_openai import OpenAI
 
 api_key = os.getenv("OPENAI_API_KEY")
 
+if not api_key:
+    raise ValueError("API key for OpenAI is not set.")
+
 client = OpenAIAPI(api_key = api_key)
 
 def csv_processing(document, query):

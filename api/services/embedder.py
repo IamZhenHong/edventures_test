@@ -10,6 +10,9 @@ load_dotenv()
 # Access the variables
 api_key = os.getenv("OPENAI_API_KEY")
 
+if not api_key:
+    raise ValueError("API key for OpenAI is not set.")
+
 def create_embeddings(text):
     embed_model = OpenAIEmbeddings(openai_api_key=api_key)
 

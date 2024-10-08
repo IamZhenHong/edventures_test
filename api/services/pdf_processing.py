@@ -19,6 +19,8 @@ load_dotenv()
 
 # Access the variables
 openai_api_key = os.getenv("OPENAI_API_KEY")
+if not openai_api_key:
+    raise ValueError("API key for OpenAI is not set.")
 CHROMA_PATH = '.chromadb'
 client = OpenAI(api_key=openai_api_key)
 
@@ -72,7 +74,7 @@ def pdf_processing(document, query):
     return augmented_result
 
 def process_and_store_pdf_embeddings(file_name):
-    
+
     # Initialize the embedding model
     embed_model = OpenAIEmbeddings(openai_api_key=openai_api_key)
 
