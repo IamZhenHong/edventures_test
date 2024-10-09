@@ -32,7 +32,7 @@ def pdf_processing(document, query):
 
     # Check if the Chroma database exists
     try:
-        embed_model = OpenAIEmbeddings(openai_api_key="sk-huKWi6C98Tw4WcAnEqNiDtMZ3LT6QJBNnp6K8d0ymNT3BlbkFJsweU5eMgz3j3iT8aI-xT7-_Y6heqdsAsEwmdtnU5kA")
+        embed_model = OpenAIEmbeddings(openai_api_key = openai_api_key)
         semantic_chunk_vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=embed_model)
         print("Chroma vectorstore registered successfully.")
 
