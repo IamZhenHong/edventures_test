@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload File</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+        .alert {
+            display: none; /* Initially hide the alert */
+        }
+    </style>
+    {% csrf_token %} <!-- Add this line -->
+</head>
+<body>
+    <div class="container">
+        <h2>Upload Document</h2>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"> <!-- Add hidden CSRF token -->
+            <div class="form-group">
+                <label for="file">Select File</label>
+                <input type="file" class="form-control" id="file" name="file" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+        <div class="alert alert-success mt-3" id="success-message"></div>
+        <div class="alert alert-danger mt-3" id="error-message"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#upload-form').on('submit', function(e) {
+                e.preventDefault(); // Prevent the default form submission
+
+                var formData = new FormData(this); // Create FormData object
+
+                // AJAX POST request to the API
+                $.ajax({
+                    url: '/api/add-document/',  // Adjust this URL to match your API endpoint
+                    type: 'POST',
+                    data: formData,
+                    contentType: false, // Do not set any content type
+                    processData: false, // Prevent jQuery from processing the data
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}"); // Set the CSRF token in the header
+                    },
+                    success: function(response) {
+                        $('#success-message').text(response.message).show();
+                        $('#error-message').hide();
+                        $('#upload-form')[0].reset(); // Reset the form
+                    },
+                    error: function(xhr) {
+                        var errorMessage = xhr.responseJSON ? xhr.responseJSON.error : 'An error occurred.';
+                        $('#error-message').text(errorMessage).show();
+                        $('#success-message').hide();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
