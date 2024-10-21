@@ -33,6 +33,7 @@ class ChatbotResponseView(APIView):
 
         # Find the relevant document
         document = find_relevant_document(user_input)
+        print('document selected', document.title)
         
         if document is None:
             raise ValueError("No relevant document found.")
@@ -71,7 +72,7 @@ class AddDocumentsView(APIView):
             document = Document(
                 file_name=file_name,
                 file_type=file_type,
-                description=description,
+                title=description,
                 file=uploaded_file  # Populate the FileField with the uploaded file
             )
             document.save()

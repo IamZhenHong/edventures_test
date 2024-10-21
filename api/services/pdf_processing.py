@@ -9,7 +9,8 @@ from transformers import pipeline
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_openai.embeddings import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
+
 
 from django.conf import settings
 
@@ -75,52 +76,101 @@ def pdf_processing(document, query):
     # Return the retrieved chunks
     return augmented_result
 
-def process_and_store_pdf_embeddings(file_name):
+# def process_and_store_pdf_embeddings(file_name):
 
+#     # Initialize the embedding model
+#     embed_model = OpenAIEmbeddings(openai_api_key=openai_api_key)
+
+#     pdf_path = os.path.join(settings.MEDIA_ROOT, 'documents', file_name)
+
+#     # Check if the Chroma database already exists
+#     if os.path.exists(CHROMA_PATH):
+#         print("Loading existing Chroma vectorstore from disk...")
+#         # Load the existing Chroma vectorstore from the directory
+#         semantic_chunk_vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=embed_model)
+#     else:
+#         print("Creating new Chroma vectorstore...")
+#         # Initialize Chroma for new vectorstore
+#         semantic_chunk_vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=embed_model)
+
+#         # Load your PDF document
+#         loader = PyPDFLoader(pdf_path)
+#         documents = loader.load()
+
+#         # Initialize the Semantic Chunker
+#         semantic_chunker = SemanticChunker(embed_model, breakpoint_threshold_type="percentile")
+
+#         # Create semantic chunks from the document contents
+#         document_contents = [d.page_content for d in documents]
+
+#         # Create semantic chunks without progress bar
+#         semantic_chunks = []
+#         for page_number, content in enumerate(document_contents, start=1):
+#             chunks = semantic_chunker.create_documents([content])
+            
+#             # Add page number to each chunk's metadata
+#             for chunk in chunks:
+#                 chunk.metadata = {"page_number": page_number}  # Add the current page number to metadata
+
+#             semantic_chunks.extend(chunks)
+
+#         # Add new embeddings to the existing vectorstore
+#         print("Adding new embeddings to the vectorstore...")
+#         semantic_chunk_vectorstore.add_documents(semantic_chunks)
+
+#         # Save the vectorstore to disk
+#         semantic_chunk_vectorstore.persist()
+#         print("New embeddings added and vectorstore saved.")
+def process_and_store_pdf_embeddings(file_name):
     # Initialize the embedding model
     embed_model = OpenAIEmbeddings(openai_api_key=openai_api_key)
 
     pdf_path = os.path.join(settings.MEDIA_ROOT, 'documents', file_name)
+
+    # Load your PDF document
+    loader = PyPDFLoader(pdf_path)
+    documents = loader.load()
 
     # Check if the Chroma database already exists
     if os.path.exists(CHROMA_PATH):
         print("Loading existing Chroma vectorstore from disk...")
         # Load the existing Chroma vectorstore from the directory
         semantic_chunk_vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=embed_model)
+        # Check if embeddings for the specific file_name exist
+        # existing_documents = semantic_chunk_vectorstore.get(where={"file_name": file_name})
+
+        # if existing_documents:
+        #     print(f"Embeddings for {file_name} already exist. Skipping recalculation.")
+        #     return  # Skip processing if embeddings already exist
     else:
         print("Creating new Chroma vectorstore...")
         # Initialize Chroma for new vectorstore
         semantic_chunk_vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=embed_model)
 
-        # Load your PDF document
-        loader = PyPDFLoader(pdf_path)
-        documents = loader.load()
+    # Initialize the Semantic Chunker
+    semantic_chunker = SemanticChunker(embed_model, breakpoint_threshold_type="percentile")
 
-        # Initialize the Semantic Chunker
-        semantic_chunker = SemanticChunker(embed_model, breakpoint_threshold_type="percentile")
+    # Create semantic chunks from the document contents
+    document_contents = [d.page_content for d in documents]
 
-        # Create semantic chunks from the document contents
-        document_contents = [d.page_content for d in documents]
+    # Create semantic chunks without progress bar
+    semantic_chunks = []
+    for page_number, content in enumerate(document_contents, start=1):
+        chunks = semantic_chunker.create_documents([content])
+        
+        # Add page number and file_name to each chunk's metadata
+        for chunk in chunks:
+            chunk.metadata = {"page_number": page_number, "file_name": file_name} # Add file_name to metadata
 
-        # Create semantic chunks without progress bar
-        semantic_chunks = []
-        for page_number, content in enumerate(document_contents, start=1):
-            chunks = semantic_chunker.create_documents([content])
-            
-            # Add page number to each chunk's metadata
-            for chunk in chunks:
-                chunk.metadata = {"page_number": page_number}  # Add the current page number to metadata
+        semantic_chunks.extend(chunks)
 
-            semantic_chunks.extend(chunks)
+    # Add new embeddings to the existing vectorstore
+    print("Adding new embeddings to the vectorstore...")
+    semantic_chunk_vectorstore.add_documents(semantic_chunks)
 
-        # Add new embeddings to the existing vectorstore
-        print("Adding new embeddings to the vectorstore...")
-        semantic_chunk_vectorstore.add_documents(semantic_chunks)
+    # Save the vectorstore to disk
 
-        # Save the vectorstore to disk
-        semantic_chunk_vectorstore.persist()
-        print("New embeddings added and vectorstore saved.")
-
+    print("New embeddings added and vectorstore saved.")
 
 # Function to augment chunks and query using OpenAI API
 def augment_chunk(chunks, user_query, title):
