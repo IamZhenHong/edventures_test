@@ -8,6 +8,7 @@ from .models import Document
 import os
 from django.conf import settings
 from django.shortcuts import render
+from .serializers import DocumentSerializer
 
 class ChatbotResponseView(APIView):
     """
@@ -82,6 +83,29 @@ class AddDocumentsView(APIView):
 
         return Response({"error": "File and description are required."}, 
                         status=status.HTTP_400_BAD_REQUEST)
+    
 def add_document(request):
     template_name = 'api/add_document.html'
     return render(request, template_name)
+
+class ListDocumentsView(APIView):
+    def get(self, request):
+        """Handle GET requests to list all documents."""
+        documents = Document.objects.all()
+        serializer = DocumentSerializer(documents, many=True)  # Serialize the queryset
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class DeleteDocumentView(APIView):
+    def post(self, request):
+        """Handle POST requests to delete a document."""
+        document_id = request.data.get('id')
+        if not document_id:
+            return Response({"error": "Document ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            document = Document.objects.get(id=document_id)
+            document.delete()
+            return Response({"message": "Document deleted successfully."}, status=status.HTTP_200_OK)
+
+        except Document.DoesNotExist:
+            return Response({"error": "Document not found."}, status=status.HTTP_404_NOT_FOUND)
