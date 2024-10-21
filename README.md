@@ -2,6 +2,7 @@
 ## About The Project
 A django app that allows you to perform Retrieval-Augmented Generation (RAG) on your documents.
 
+**Project Link:** https://edven-fe.onrender.com
 ### Built With
 
 - **Django**: Web framework for building the backend.
